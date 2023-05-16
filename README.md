@@ -13,3 +13,11 @@ yarn start
 ```bash
 yarn build
 ```
+
+
+npm install --save @theatre/core @theatre/studio
+
+import studio from '@theatre/studio'
+studio.initialize()
+
+const project = getProject('THREE.js x Theatre.js')

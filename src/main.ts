@@ -1,5 +1,25 @@
 import './style.css'
 import * as THREE from 'three'
+import { getProject, types } from '@theatre/core'
+console.log("pkp:  ~ file: main.ts:4 ~ getProject:", getProject)
+import studio from '@theatre/studio'
+console.log("pkp:  ~ file: main.ts:4 ~ studio:", studio)
+
+import projectState from './state.json'
+console.log("pkp:  ~ file: main.ts:9 ~ projectState:", projectState)
+
+
+studio.initialize()
+
+// const project = getProject('EYE')
+const project = getProject('EYE', { state: projectState })
+
+console.log("pkp:  ~ file: main.ts:12 ~ project:", project)
+
+project.ready.then(() => sheet.sequence.play({ iterationCount: Infinity }))
+
+const sheet = project.sheet('Animated scene')
+
 
 /**
  * Camera
@@ -24,7 +44,7 @@ const scene = new THREE.Scene()
  * TorusKnot
  */
 const geometry = new THREE.TorusKnotGeometry(10, 3, 300, 16)
-const material = new THREE.MeshStandardMaterial({color: '#f00'})
+const material = new THREE.MeshStandardMaterial({ color: '#f00' })
 material.color = new THREE.Color('#049ef4')
 material.roughness = 0.5
 
@@ -32,6 +52,25 @@ const mesh = new THREE.Mesh(geometry, material)
 mesh.castShadow = true
 mesh.receiveShadow = true
 scene.add(mesh)
+
+
+// Create a Theatre.js object with the props you want to
+// animate
+const torusKnotObj = sheet.object('Torus Knot', {
+  // Note that the rotation is in radians
+  // (full rotation: 2 * Math.PI)
+  rotation: types.compound({
+    x: types.number(mesh.rotation.x, { range: [-2, 2] }),
+    y: types.number(mesh.rotation.y, { range: [-2, 2] }),
+    z: types.number(mesh.rotation.z, { range: [-2, 2] }),
+  }),
+})
+
+torusKnotObj.onValuesChange((values) => {
+  const { x, y, z } = values.rotation
+
+  mesh.rotation.set(x * Math.PI, y * Math.PI, z * Math.PI)
+})
 
 /*
  * Lights
@@ -73,7 +112,7 @@ scene.add(rectAreaLight)
  * Renderer
  */
 
-const renderer = new THREE.WebGLRenderer({antialias: true})
+const renderer = new THREE.WebGLRenderer({ antialias: true })
 
 renderer.shadowMap.enabled = true
 renderer.shadowMap.type = THREE.PCFSoftShadowMap
